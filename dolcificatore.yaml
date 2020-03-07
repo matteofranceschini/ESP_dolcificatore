@@ -19,7 +19,7 @@ logger:
     # Sync time with Home Assistant.
 time:
   - platform: homeassistant
-id: homeassistant_time
+    id: homeassistant_time
 
 sensor:
       - platform: wifi_signal
@@ -28,25 +28,25 @@ sensor:
       - platform: uptime
         name: "Uptime"
       - platform: ultrasonic
-        trigger_pin: D3
-        echo_pin: D4
+        trigger_pin: D7
+        echo_pin: D6
         name: "Livello Sale 1"
-        update_interval: 1s
-        pulse_time: 20us
-        timeout: 3m
-        filters:
-          - lambda: return (0.42-x)*(100/0.42);
-        unit_of_measurement: "%"
+        update_interval: 1.211s
+        pulse_time: 50us
+        #        timeout: 3m
+        #        filters:
+            #          - lambda: return (0.8-x)*(100/0.8);
+            #        unit_of_measurement: "%"
       - platform: ultrasonic
         trigger_pin: D2
         echo_pin: D1
         name: "Livello Sale 2"
         update_interval: 1s
-        pulse_time: 20us
+        pulse_time: 50us
         timeout: 3m
-        filters: #sostituire 0.42 con l'altezza reale del contenitore
-          - lambda: return (0.42-x)*(100/0.42);
-        unit_of_measurement: "%"
+        #filters: 
+        #  - lambda: return (0.8-x)*(100/0.8);
+        #        unit_of_measurement: "%"
 
 switch:
   - platform: restart
