@@ -34,9 +34,12 @@ sensor:
         update_interval: 1.211s
         pulse_time: 50us
         #        timeout: 3m
-        #        filters:
-            #          - lambda: return (0.8-x)*(100/0.8);
-            #        unit_of_measurement: "%"
+        filters:
+           - sliding_window_moving_average:
+               window_size: 150
+               send_every: 1
+           - lambda: return (0.8-x)*(100/0.8);
+        unit_of_measurement: "%"
       - platform: ultrasonic
         trigger_pin: D2
         echo_pin: D1
@@ -44,9 +47,12 @@ sensor:
         update_interval: 1s
         pulse_time: 50us
         timeout: 3m
-        #filters: 
-        #  - lambda: return (0.8-x)*(100/0.8);
-        #        unit_of_measurement: "%"
+        filters: 
+          - sliding_window_moving_average:
+               window_size: 150
+               send_every: 1
+          - lambda: return (0.8-x)*(100/0.8);
+        unit_of_measurement: "%"
 
 switch:
   - platform: restart
@@ -58,3 +64,7 @@ api:
 ota:
      safe_mode: True
      password: !secret ota_password
+
+web_server:
+  port: 80
+
