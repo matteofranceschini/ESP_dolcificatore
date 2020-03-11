@@ -1,7 +1,9 @@
 esphome:
-  name: dolcificatore_serra
-  platform: ESP8266
-  board: nodemcuv2 
+  name: dolcificatore_serra_laser
+  platform: ESP32
+  board: esp-wrover-kit
+  #  platform: ESP8266
+  #board: nodemcuv2 
 wifi:
   ssid: !secret SSID
   password: !secret wifi_password
@@ -20,6 +22,18 @@ logger:
 time:
   - platform: homeassistant
     id: homeassistant_time
+i2c:
+       - sda: 21
+         scl: 22
+         id: bus_a
+         frequency: 200khz
+         scan: True
+       - sda: 13
+         scl: 16
+         id: bus_b
+         frequency: 200khz
+         scan: True
+
 
 sensor:
       - platform: wifi_signal
@@ -27,32 +41,17 @@ sensor:
         update_interval: 60s
       - platform: uptime
         name: "Uptime"
-      - platform: ultrasonic
-        trigger_pin: D7
-        echo_pin: D6
+      - platform: vl53l0x
         name: "Livello Sale 1"
-        update_interval: 1.211s
-        pulse_time: 50us
-        #        timeout: 3m
-        filters:
-           - sliding_window_moving_average:
-               window_size: 150
-               send_every: 1
-           - lambda: return (0.8-x)*(100/0.8);
-        unit_of_measurement: "%"
-      - platform: ultrasonic
-        trigger_pin: D2
-        echo_pin: D1
-        name: "Livello Sale 2"
+        #        i2c_id: bus_a
+        #        address: 0x49
         update_interval: 1s
-        pulse_time: 50us
-        timeout: 3m
-        filters: 
-          - sliding_window_moving_average:
-               window_size: 150
-               send_every: 1
-          - lambda: return (0.8-x)*(100/0.8);
-        unit_of_measurement: "%"
+      - platform: vl53l0x
+        name: "Livello sale 2"
+        #i2c_id: bus_b
+        #        address: 0x52
+        update_interval: 1s
+        
 
 switch:
   - platform: restart
