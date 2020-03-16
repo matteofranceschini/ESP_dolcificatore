@@ -43,15 +43,21 @@ sensor:
         name: "Uptime"
       - platform: vl53l0x
         name: "Livello Sale 1"
-        #        i2c_id: bus_a
-        #        address: 0x49
-        update_interval: 1s
+        update_interval: 500ms
+        filters:
+          - offset: -0.14
+          - exponential_moving_average:
+              alpha: 0.1
+              send_every: 15
       - platform: vl53l0x
         name: "Livello sale 2"
-        #i2c_id: bus_b
-        #        address: 0x52
-        update_interval: 1s
-        
+        update_interval: 500ms
+        filters:
+          - offset: -0.14
+          - exponential_moving_average:
+              alpha: 0.1
+              send_every: 15
+       
 
 switch:
   - platform: restart
