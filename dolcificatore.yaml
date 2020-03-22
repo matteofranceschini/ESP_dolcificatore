@@ -37,10 +37,13 @@ i2c:
          #global variables used to customize the sensor                  
          #values are in CM, because we do the conversion with the lambda
 globals:
+    #it's the distance from the sensor to the bottom of the container
    - id: distance_from_empty
      type: float
      restore_value: yes
      initial_value: '80'
+     #it's the distance from the sensor to the maximum fill of the container
+     #or the minimum read that the sensor is able to do (mine is 20cm)
    - id: distance_from_full
      type: float
      restore_value: yes
