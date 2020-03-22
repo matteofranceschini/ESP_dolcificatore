@@ -34,7 +34,18 @@ i2c:
          frequency: 200khz
          scan: True
 
-
+         #global variables used to customize the sensor                  
+         #values are in CM, because we do the conversion with the lambda
+globals:
+   - id: distance_from_empty
+     type: float
+     restore_value: yes
+     initial_value: '80'
+   - id: distance_from_full
+     type: float
+     restore_value: yes
+     initial_value: '20'
+ 
 sensor:
       - platform: wifi_signal
         name: "WiFi Signal Sensor"
@@ -42,14 +53,20 @@ sensor:
       - platform: uptime
         name: "Uptime"
       - platform: vl53l0x
+        id: laser_1
         name: "Livello Sale 1"
         update_interval: 500ms
         filters:
+            #i've put a glass in front of the sensor to protect it from the
+            #salty vapors: this needs and adjustment in offset.
           - offset: -0.14
           - exponential_moving_average:
               alpha: 0.1
               send_every: 15
+          - lambda: return (id(distance_from_empty)/100-x)*100;
+        unit_of_measurement: "cm"    
       - platform: vl53l0x
+        id: laser_2
         name: "Livello sale 2"
         update_interval: 500ms
         filters:
@@ -57,7 +74,16 @@ sensor:
           - exponential_moving_average:
               alpha: 0.1
               send_every: 15
-       
+          - lambda: return (id(distance_from_empty)/100-x)*100;
+        unit_of_measurement: "cm"    
+      - platform: template
+        name: "Livello Sale Percentuale"
+        update_interval: 500ms
+        lambda: |-
+            //this function will do the mean between the two values and provide
+            //the percent of salt remaining in the container.
+            return ((((id(laser_1).state)+id(laser_2).state)/2))*(100/(id(distance_from_empty)-id(distance_from_full)));
+        unit_of_measurement: "%"    
 
 switch:
   - platform: restart
