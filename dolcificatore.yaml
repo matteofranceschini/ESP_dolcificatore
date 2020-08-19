@@ -22,20 +22,7 @@ logger:
 time:
   - platform: homeassistant
     id: homeassistant_time
-    on_time:
-        - seconds: 0
-          minutes: 0
-          hours: 0
-          then:
-              #resets the daily salt at midnight
-              - sensor.integration.reset: daily_salt
-        - seconds: 0
-          minutes: 0
-          hours: 0
-          days_of_month: 1
-          then:
-              #resets the monthly salt on the first day of month
-              - sensor.integration.reset: monthly_salt
+
 i2c:
        - sda: 21
          scl: 22
@@ -56,7 +43,7 @@ globals:
    - id: distance_from_empty
      type: float
      restore_value: yes
-     initial_value: '78'
+     initial_value: '78.0'
      #it's the distance from the sensor to the maximum fill of the container
      #or the minimum read that the sensor is able to do (mine is 20cm)
      #value is in cm because we do the conversion with the lambda
@@ -65,7 +52,7 @@ globals:
    - id: distance_from_full
      type: float
      restore_value: yes
-     initial_value: '5'
+     initial_value: '5.0'
 
 sensor:
       - platform: wifi_signal
@@ -83,7 +70,8 @@ sensor:
           - sliding_window_moving_average:
               window_size: 100
               send_every: 20
-          - lambda: return (id(distance_from_empty)/100-x)*100;
+          - lambda: return (id(distance_from_empty)/100.0-x)*100.0;
+          - throttle: 1min
         unit_of_measurement: "cm"    
       - platform: vl53l0x
         id: laser_2
@@ -94,7 +82,8 @@ sensor:
           - sliding_window_moving_average:
               window_size: 100
               send_every: 20
-          - lambda: return (id(distance_from_empty)/100-x)*100;
+          - lambda: return (id(distance_from_empty)/100.0-x)*100.0;
+          - throttle: 1min
         unit_of_measurement: "cm"    
       - platform: template
         name: "Livello Sale Percentuale"
@@ -102,7 +91,7 @@ sensor:
         lambda: |-
             //this function will do the mean between the two values and provide
             //the percent of salt remaining in the container.
-            return ((((id(laser_1).state)+id(laser_2).state)/2))*(100/(id(distance_from_empty)-id(distance_from_full)));
+            return ((((id(laser_1).state)+id(laser_2).state)/2))*(100.0/(id(distance_from_empty)-id(distance_from_full)));
         unit_of_measurement: "%"   
       - platform: template
         name: "Sale Rimanente"
@@ -118,18 +107,21 @@ sensor:
           //12cm of salt are equivalent to 25kg of salt
           return ((((id(laser_1).state)+id(laser_2).state)/2)*2.083);
         update_interval: 10s
-      - platform: integration
-        name: "Sale Odierno Consumato"
-        sensor: salt_remaining
-        icon: "mdi:math-integral"
-        id: daily_salt
-        time_unit: h 
-      - platform: integration
-        name: "Sale Mensile Consumato"
-        sensor: salt_remaining
-        icon: "mdi:math-integral"
-        id: monthly_salt
-        time_unit: h
+      - platform: template
+        name: "Sale Rimanente Orario"
+        id: hourly_salt_remaining
+        unit_of_measurement: "kg"
+        icon: "mdi:weight-kilogram"
+        accuracy_decimals: 1
+        filters:
+            - throttle: 60min
+            - sliding_window_moving_average:
+                window_size: 30
+                send_every: 1
+        lambda: |-
+            return id(salt_remaining).state;
+
+
 
 switch:
   - platform: restart
