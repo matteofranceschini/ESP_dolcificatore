@@ -114,7 +114,7 @@ sensor:
         icon: "mdi:weight-kilogram"
         accuracy_decimals: 1
         filters:
-            - throttle: 60min
+            - throttle: 10min
             - sliding_window_moving_average:
                 window_size: 30
                 send_every: 1
